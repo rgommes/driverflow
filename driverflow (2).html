@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#080A0E">
+<title>DriverFlow — Controle Financeiro para Motoristas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080A0E;--bg2:#0D1117;--bg3:#111620;--bg4:#161C28;
+  --card:#111820;--card2:#161E2E;--border:#1E2A3A;--border2:#243040;
+  --green:#00FF94;--green2:#00CC77;--green3:#00FF9420;
+  --red:#FF3B5C;--red2:#FF3B5C15;--gold:#FFD700;--gold2:#FFD70020;--gold3:#FFD70008;
+  --blue:#4A9EFF;--purple:#A855F7;
+  --text:#F0F4FF;--text2:#8899AA;--text3:#556677;
+  --font:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+.app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative}
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 20px}
+.auth-logo{font-size:36px;font-weight:700;letter-spacing:-1px;margin-bottom:8px;text-align:center}
+.auth-logo span{color:var(--green)}
+.auth-tagline{font-size:13px;color:var(--text2);margin-bottom:40px;text-align:center;line-height:1.7}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:28px;width:100%;max-width:380px}
+.auth-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.auth-desc{font-size:13px;color:var(--text2);margin-bottom:24px}
+.inp-group{margin-bottom:16px}
+.inp-label{font-size:11px;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.6px;font-weight:500}
+.inp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-size:15px;font-family:var(--font);outline:none;transition:.2s;-webkit-appearance:none}
+.inp:focus{border-color:var(--green2);background:var(--bg4)}
+.inp::placeholder{color:var(--text3)}
+select.inp{cursor:pointer}
+.btn-primary{width:100%;background:var(--green);color:#080A0E;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;font-family:var(--font);cursor:pointer;transition:.15s}
+.btn-primary:active{transform:scale(.97);background:var(--green2)}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:12px;padding:13px;font-size:14px;font-family:var(--font);cursor:pointer;width:100%;margin-top:10px}
+.btn-ghost:active{background:var(--bg3)}
+.auth-link{font-size:13px;color:var(--text2);text-align:center;margin-top:16px;cursor:pointer}
+.auth-link span{color:var(--green)}
+.pass-wrap{position:relative}
+.pass-wrap .inp{padding-right:48px}
+.pass-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);padding:4px;line-height:1}
+/* TRIAL BANNER */
+.trial-banner{background:linear-gradient(135deg,#0D1A12,#0A1220);border:1px solid var(--green);border-radius:16px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.trial-icon{font-size:24px;flex-shrink:0}
+.trial-text{font-size:13px;color:var(--text2);line-height:1.5}
+.trial-text strong{color:var(--green);display:block;font-size:15px;margin-bottom:2px}
+/* BLOCKED */
+.blocked-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 20px;text-align:center}
+.blocked-icon{font-size:64px;margin-bottom:16px}
+.blocked-title{font-size:24px;font-weight:700;margin-bottom:8px}
+.blocked-desc{font-size:14px;color:var(--text2);margin-bottom:32px;line-height:1.8}
+.plan-cards{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;margin-bottom:20px}
+.plan-card{border-radius:20px;padding:22px;text-decoration:none;display:block;transition:.15s;position:relative;overflow:hidden}
+.plan-card:active{transform:scale(.97)}
+.plan-mensal{background:var(--card);border:1px solid var(--border)}
+.plan-anual{background:linear-gradient(135deg,#0D1A0F,#0A1220);border:2px solid var(--green)}
+.plan-badge{position:absolute;top:12px;right:12px;background:var(--green);color:#080A0E;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px}
+.plan-name{font-size:12px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.plan-price{font-size:32px;font-weight:700;font-family:var(--mono);color:var(--text);letter-spacing:-1px}
+.plan-price span{font-size:14px;font-weight:400;color:var(--text2)}
+.plan-desc{font-size:12px;color:var(--text3);margin-top:6px}
+.plan-anual .plan-price{color:var(--green)}
+.blocked-out{font-size:13px;color:var(--text3);cursor:pointer;margin-top:8px}
+.blocked-out span{color:var(--red)}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0;position:sticky;top:0;z-index:10;background:var(--bg)}
+.topbar-logo{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.topbar-logo span{color:var(--green)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#080A0E;cursor:pointer;flex-shrink:0}
+.notif-btn{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px}
+.bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg2);border-top:1px solid var(--border);padding:12px 0 20px;display:flex;justify-content:space-around;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 16px;min-width:60px}
+.nav-icon{font-size:21px}
+.nav-label{font-size:10px;color:var(--text3);font-weight:600}
+.nav-item.active .nav-label{color:var(--green)}
+.main{padding:16px 16px 110px}
+.greeting{margin-bottom:20px}
+.greeting-sub{font-size:13px;color:var(--text2);margin-bottom:2px}
+.greeting-name{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.greeting-streak{display:inline-flex;align-items:center;gap:6px;background:var(--gold2);border:1px solid #FFD70050;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;color:var(--gold);margin-top:10px}
+.filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:20px;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-chip{flex-shrink:0;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:var(--card)}
+.filter-chip.active{background:var(--green3);border-color:var(--green);color:var(--green)}
+.hero-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
+.hero-glow{position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(#00FF9412,transparent 70%);border-radius:50%;pointer-events:none}
+.hero-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:500}
+.hero-value{font-family:var(--mono);font-size:44px;font-weight:700;color:var(--green);letter-spacing:-2px;line-height:1.1}
+.hero-sub{font-size:14px;color:var(--text2);margin-top:8px}
+.hero-sub span{color:var(--green);font-weight:600}
+.hero-badge{display:inline-flex;align-items:center;gap:5px;background:#00FF941A;border:1px solid #00FF9435;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--green);margin-top:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stat-value{font-size:22px;font-weight:700;letter-spacing:-.5px;font-family:var(--mono)}
+.stat-value.red{color:var(--red)}.stat-value.green{color:var(--green)}.stat-value.blue{color:var(--blue)}
+.stat-delta{font-size:11px;color:var(--text3);margin-top:4px}
+.stat-delta.up{color:var(--green)}.stat-delta.down{color:var(--red)}
+.section-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.section-sub{font-size:12px;color:var(--text2);font-weight:400}
+.meta-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:10px}
+.meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.meta-name{font-size:14px;font-weight:600}
+.meta-pct{font-size:14px;font-weight:700;color:var(--green)}
+.meta-bar-bg{background:var(--bg3);border-radius:20px;height:8px;overflow:hidden}
+.meta-bar-fill{height:100%;border-radius:20px;transition:.8s ease}
+.meta-vals{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:6px}
+.meta-vals span{font-weight:600;color:var(--text)}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px}
+.chart-wrap{position:relative;height:170px}
+/* ENTRIES LIST */
+.entry-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.entry-row:last-child{border-bottom:none}
+.entry-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.entry-info{flex:1;min-width:0}
+.entry-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.entry-date{font-size:11px;color:var(--text3);margin-top:2px}
+.entry-val{font-size:14px;font-weight:700;font-family:var(--mono);white-space:nowrap}
+.entry-val.green{color:var(--green)}
+.entry-val.red{color:var(--red)}
+.entry-actions{display:flex;gap:5px;flex-shrink:0}
+.entry-btn{width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px}
+.btn-edit{background:#4A9EFF18;color:var(--blue)}
+.btn-del{background:var(--red2);color:var(--red)}
+/* GAMIFICATION */
+.level-card{background:linear-gradient(135deg,#0D1A12,#0D1420);border:1px solid #00FF9430;border-radius:20px;padding:22px;margin-bottom:16px;position:relative;overflow:hidden}
+.level-glow{position:absolute;top:0;right:0;width:120px;height:120px;background:radial-gradient(#00FF9410,transparent 70%);pointer-events:none}
+.level-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.level-badge{background:var(--gold2);border:1px solid #FFD70050;border-radius:12px;padding:6px 16px;font-size:13px;font-weight:700;color:var(--gold)}
+.xp-bar-bg{background:var(--bg3);border-radius:20px;height:10px;margin-bottom:8px;overflow:hidden}
+.xp-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--green),var(--blue));transition:.6s ease}
+.xp-vals{display:flex;justify-content:space-between;font-size:12px;color:var(--text2)}
+.badges-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.badge-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.badge-item.earned{border-color:var(--gold);background:var(--gold3)}
+.badge-emoji{font-size:24px}
+.badge-name{font-size:9px;color:var(--text3);text-align:center;font-weight:600;line-height:1.3}
+.badge-item.earned .badge-name{color:var(--gold)}
+.streak-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px}
+.days-row{display:flex;gap:5px;margin-top:14px}
+.day-dot{flex:1;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+.day-dot.done{background:var(--green3);border:1px solid #00FF9440;color:var(--green)}
+.day-dot.today{background:var(--green);color:#080A0E}
+.day-dot.miss{background:var(--bg3);border:1px solid var(--border);color:var(--text3)}
+.rank-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.rank-row:last-child{border-bottom:none}
+.rank-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+/* TROPHY */
+.trophy-card{background:linear-gradient(160deg,#0A1A0F,#081220,#0A0E1A);border:1px solid #00FF9440;border-radius:28px;padding:28px;margin-bottom:16px;text-align:center;overflow:hidden}
+.trophy-big{font-size:56px;margin-bottom:8px;display:block}
+.trophy-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.trophy-value{font-family:var(--mono);font-size:52px;font-weight:700;color:var(--green);letter-spacing:-2px;line-height:1;margin-bottom:6px}
+.trophy-lucro{font-size:16px;color:var(--text2);margin-bottom:22px}
+.trophy-lucro span{color:var(--green);font-weight:700}
+.trophy-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px}
+.trophy-stat{background:#FFFFFF06;border-radius:14px;padding:12px 6px;border:1px solid #FFFFFF08}
+.trophy-stat-val{font-family:var(--mono);font-size:20px;font-weight:700;margin-bottom:4px}
+.trophy-stat-label{font-size:10px;color:var(--text2);text-transform:uppercase}
+.perf-seal{display:inline-flex;align-items:center;gap:6px;background:var(--gold2);border:1px solid #FFD70050;border-radius:20px;padding:8px 20px;font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px}
+.motiv-msg{font-size:14px;color:var(--text2);font-style:italic;margin-bottom:22px;padding:14px;background:#FFFFFF04;border-radius:12px;border-left:3px solid var(--green);text-align:left;line-height:1.6}
+.btn-share{width:100%;background:linear-gradient(135deg,var(--green),var(--blue));color:#080A0E;border:none;border-radius:14px;padding:17px;font-size:16px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.watermark{font-size:10px;color:var(--text3);margin-bottom:16px}
+/* PROFILE */
+.profile-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:22px;margin-bottom:16px;display:flex;align-items:center;gap:16px}
+.profile-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#080A0E;flex-shrink:0}
+.logout-btn{width:100%;background:var(--red2);border:1px solid #FF3B5C30;border-radius:12px;padding:15px;color:var(--red);font-size:15px;font-weight:600;font-family:var(--font);cursor:pointer;margin-top:8px}
+.plano-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-top:6px}
+.plano-ativo{background:var(--green3);border:1px solid #00FF9440;color:var(--green)}
+.plano-trial{background:var(--gold2);border:1px solid #FFD70040;color:var(--gold)}
+.plano-inativo{background:var(--red2);border:1px solid #FF3B5C30;color:var(--red)}
+/* FAB */
+.add-btn{position:fixed;bottom:90px;right:calc(50% - 210px);width:56px;height:56px;border-radius:50%;background:var(--green);border:none;cursor:pointer;font-size:26px;color:#080A0E;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px #00FF9450;z-index:99;transition:.15s}
+.add-btn:active{transform:scale(.92)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:#00000088;z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-sheet{background:var(--bg2);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:430px;border-top:1px solid var(--border);max-height:90vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 22px}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:20px}
+.seg-control{display:flex;background:var(--bg3);border-radius:12px;padding:3px;gap:2px;margin-bottom:20px;border:1px solid var(--border)}
+.seg-opt{flex:1;padding:10px;border-radius:9px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;color:var(--text2)}
+.seg-opt.active{background:var(--card2);color:var(--text)}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.type-opt{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 6px;text-align:center;cursor:pointer}
+.type-opt.active{border-color:var(--green);background:var(--green3)}
+.type-opt-icon{font-size:22px;margin-bottom:5px}
+.type-opt-label{font-size:10px;color:var(--text2);font-weight:600}
+.type-opt.active .type-opt-label{color:var(--green)}
+/* EDIT MODAL */
+.edit-overlay{position:fixed;inset:0;background:#00000090;z-index:300;display:flex;align-items:center;justify-content:center;padding:24px}
+.edit-card{background:var(--bg2);border:1px solid var(--border);border-radius:24px;padding:24px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto}
+.edit-title{font-size:17px;font-weight:700;margin-bottom:20px}
+.edit-actions{display:flex;gap:10px;margin-top:4px}
+.btn-cancel{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text2);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer}
+.btn-save{flex:2;background:var(--green);border:none;border-radius:12px;padding:14px;color:#080A0E;font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer}
+/* ADMIN */
+.admin-screen{min-height:100vh;background:var(--bg);padding:24px 16px 60px}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.admin-title{font-size:22px;font-weight:700}
+.admin-logout{background:var(--red2);border:1px solid #FF3B5C30;color:var(--red);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer}
+.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.admin-stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
+.admin-stat-val{font-size:26px;font-weight:700;font-family:var(--mono)}
+.admin-stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;margin-top:2px}
+.admin-search{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-size:14px;font-family:var(--font);outline:none;margin-bottom:12px}
+.admin-search::placeholder{color:var(--text3)}
+.btn-add-member{width:100%;background:var(--green3);border:1px solid #00FF9440;color:var(--green);border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+.user-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px}
+.user-card-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.user-av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#080A0E;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-email{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-status{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.s-ativo{background:var(--green3);border:1px solid #00FF9440;color:var(--green)}
+.s-trial{background:var(--gold2);border:1px solid #FFD70040;color:var(--gold)}
+.s-inativo{background:var(--red2);border:1px solid #FF3B5C30;color:var(--red)}
+.user-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.user-tag{font-size:11px;color:var(--text2);background:var(--bg3);padding:3px 10px;border-radius:20px}
+.user-actions{display:flex;gap:6px;flex-wrap:wrap}
+.u-btn{flex:1;min-width:80px;padding:9px 6px;border-radius:10px;border:none;font-size:12px;font-weight:600;font-family:var(--font);cursor:pointer;white-space:nowrap}
+.u-ativar{background:var(--green3);color:var(--green);border:1px solid #00FF9440}
+.u-desativar{background:var(--red2);color:var(--red);border:1px solid #FF3B5C30}
+.u-senha{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.u-trial{background:var(--gold2);color:var(--gold);border:1px solid #FFD70040}
+/* TOAST */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--green);color:#080A0E;padding:13px 26px;border-radius:20px;font-weight:700;font-size:14px;z-index:9999;transition:.3s;opacity:0;pointer-events:none;white-space:nowrap;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--red);color:#fff}
+.hidden{display:none!important}
+.fade-in{animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.empty-state{text-align:center;padding:32px 16px;color:var(--text3);font-size:14px;line-height:1.8}
+.empty-big{font-size:40px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<div class="toast" id="toast"></div>
+
+<!-- LOADING -->
+<div id="s-loading" class="loading-screen">
+  <div class="auth-logo">Driver<span style="color:var(--green)">Flow</span></div>
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:var(--text3);margin-top:4px">Conectando à nuvem...</div>
+</div>
+
+<!-- LOGIN -->
+<div id="s-login" class="auth-screen fade-in hidden">
+  <div class="auth-logo">Driver<span>Flow</span></div>
+  <div class="auth-tagline">Controle financeiro premium<br>para motoristas de aplicativo</div>
+  <div class="auth-card">
+    <div class="auth-title">Entrar</div>
+    <div class="auth-desc">Acesse seus dados na nuvem</div>
+    <div class="inp-group"><label class="inp-label">Email</label><input class="inp" type="email" id="l-email" placeholder="seu@email.com" autocomplete="email"></div>
+    <div class="inp-group"><label class="inp-label">Senha</label><div class="pass-wrap"><input class="inp" type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"><button class="pass-eye" onclick="tp('l-pass',this)">👁️</button></div></div>
+    <button class="btn-primary" onclick="doLogin()">Entrar agora →</button>
+    <button class="btn-ghost" onclick="ss('s-register')">Criar conta gratuita</button>
+    <div class="auth-link" onclick="ss('s-forgot')">Esqueceu a senha? <span>Recuperar</span></div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div id="s-register" class="auth-screen fade-in hidden">
+  <div class="auth-logo">Driver<span>Flow</span></div>
+  <div class="auth-tagline">Teste grátis por 3 dias,<br>depois apenas R$ 9,90/mês</div>
+  <div class="auth-card">
+    <div class="auth-title">Criar conta</div>
+    <div class="auth-desc">3 dias grátis • Sem cartão necessário</div>
+    <div class="inp-group"><label class="inp-label">Nome completo</label><input class="inp" type="text" id="r-name" placeholder="João Silva" autocomplete="name"></div>
+    <div class="inp-group"><label class="inp-label">Email</label><input class="inp" type="email" id="r-email" placeholder="seu@email.com" autocomplete="email"></div>
+    <div class="inp-group"><label class="inp-label">Plataforma principal</label><select class="inp" id="r-plat"><option value="Uber">🚗 Uber</option><option value="99">🟡 99</option><option value="InDriver">🟢 InDriver</option><option value="Ambas">🔀 Várias</option></select></div>
+    <div class="inp-group"><label class="inp-label">Senha (mín. 6 caracteres)</label><div class="pass-wrap"><input class="inp" type="password" id="r-pass" placeholder="••••••••" autocomplete="new-password"><button class="pass-eye" onclick="tp('r-pass',this)">👁️</button></div></div>
+    <button class="btn-primary" onclick="doRegister()">Começar teste grátis →</button>
+    <button class="btn-ghost" onclick="ss('s-login')">Já tenho conta</button>
+  </div>
+</div>
+
+<!-- FORGOT -->
+<div id="s-forgot" class="auth-screen fade-in hidden">
+  <div class="auth-card">
+    <div class="auth-title">Recuperar acesso</div>
+    <div class="auth-desc">Informe seu email cadastrado</div>
+    <div class="inp-group"><label class="inp-label">Email</label><input class="inp" type="email" id="f-email" placeholder="seu@email.com"></div>
+    <button class="btn-primary" onclick="doForgot()">Solicitar recuperação →</button>
+    <button class="btn-ghost" onclick="ss('s-login')">← Voltar ao login</button>
+  </div>
+</div>
+
+<!-- BLOCKED -->
+<div id="s-blocked" class="blocked-screen fade-in hidden">
+  <div class="blocked-icon">🔒</div>
+  <div class="blocked-title">Período de teste encerrado</div>
+  <div class="blocked-desc">Seus 3 dias gratuitos acabaram.<br>Escolha um plano para continuar<br>controlando seus ganhos!</div>
+  <div class="plan-cards">
+    <a class="plan-card plan-anual" href="https://pay.cakto.com.br/n6e7a3n" target="_blank">
+      <div class="plan-badge">MELHOR OFERTA</div>
+      <div class="plan-name">Plano Anual</div>
+      <div class="plan-price">R$ 57<span>/ano</span></div>
+      <div class="plan-desc" style="color:var(--green)">✓ Apenas R$ 4,75/mês • Economize 52%</div>
+    </a>
+    <a class="plan-card plan-mensal" href="https://pay.cakto.com.br/38ra5ue_888322" target="_blank">
+      <div class="plan-name">Plano Mensal</div>
+      <div class="plan-price">R$ 9,90<span>/mês</span></div>
+      <div class="plan-desc">Cancele quando quiser</div>
+    </a>
+  </div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Após o pagamento, aguarde a ativação</div>
+  <div class="blocked-out" onclick="doLogout()">← Sair da conta</div>
+</div>
+
+<!-- ADMIN -->
+<div id="s-admin" class="admin-screen fade-in hidden">
+  <div class="admin-header">
+    <div><div class="admin-title">⚙️ Painel Admin</div><div style="font-size:12px;color:var(--text3)">DriverFlow</div></div>
+    <button class="admin-logout" onclick="doLogout()">Sair</button>
+  </div>
+  <div class="admin-stats">
+    <div class="admin-stat"><div class="admin-stat-val" id="a-total" style="color:var(--blue)">0</div><div class="admin-stat-label">Total</div></div>
+    <div class="admin-stat"><div class="admin-stat-val" id="a-ativos" style="color:var(--green)">0</div><div class="admin-stat-label">Ativos</div></div>
+    <div class="admin-stat"><div class="admin-stat-val" id="a-inativos" style="color:var(--red)">0</div><div class="admin-stat-label">Inativos</div></div>
+  </div>
+  <button class="btn-add-member" onclick="openAddMember()">➕ Adicionar membro manualmente</button>
+  <input class="admin-search" id="a-search" placeholder="🔍 Buscar nome ou email..." oninput="renderUsers()">
+  <div id="a-users"></div>
+</div>
+
+<!-- APP -->
+<div id="s-app" class="hidden">
+  <div class="topbar">
+    <div class="topbar-logo">Driver<span>Flow</span></div>
+    <div class="topbar-right">
+      <div class="notif-btn">🔔</div>
+      <div class="avatar" id="av" onclick="setTab('profile')">DF</div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="t-dashboard" class="main fade-in">
+    <div class="greeting">
+      <div class="greeting-sub" id="g-time">Bom dia,</div>
+      <div class="greeting-name" id="g-name">Motorista</div>
+      <div class="greeting-streak">🔥 <span id="g-streak">1</span> dias seguidos</div>
+    </div>
+    <div id="trial-banner" class="trial-banner hidden">
+      <div class="trial-icon">⏳</div>
+      <div class="trial-text"><strong id="trial-text">Teste grátis: 3 dias restantes</strong>Aproveite todos os recursos sem pagar nada!</div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-chip active" onclick="setFilter(this,'Hoje')">Hoje</div>
+      <div class="filter-chip" onclick="setFilter(this,'Ontem')">Ontem</div>
+      <div class="filter-chip" onclick="setFilter(this,'7 dias')">7 dias</div>
+      <div class="filter-chip" onclick="setFilter(this,'30 dias')">30 dias</div>
+      <div class="filter-chip" onclick="setFilter(this,'Este mês')">Este mês</div>
+      <div class="filter-chip" onclick="setFilter(this,'Mês ant.')">Mês ant.</div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-glow"></div>
+      <div class="hero-label">💰 Faturamento Bruto</div>
+      <div class="hero-value" id="h-bruto">R$ 0,00</div>
+      <div class="hero-sub">Lucro líquido: <span id="h-lucro">R$ 0,00</span></div>
+      <div class="hero-badge">📈 <span id="h-perf">Registre sua primeira corrida</span></div>
+    </div>
+    <div class="grid2">
+      <div class="stat-card"><div class="stat-label">🚗 Corridas</div><div class="stat-value blue" id="d-cor">0</div><div class="stat-delta" id="d-cord">sem registros</div></div>
+      <div class="stat-card"><div class="stat-label">⏱ Horas online</div><div class="stat-value blue" id="d-hrs">0h</div><div class="stat-delta">tempo online</div></div>
+      <div class="stat-card"><div class="stat-label">⚡ Média/corrida</div><div class="stat-value green" id="d-med">R$ 0</div><div class="stat-delta up">ticket médio</div></div>
+      <div class="stat-card"><div class="stat-label">💵 Média/hora</div><div class="stat-value green" id="d-ph">R$ 0</div><div class="stat-delta up">produtividade</div></div>
+      <div class="stat-card"><div class="stat-label">⛽ Combustível</div><div class="stat-value red" id="d-comb">R$ 0</div><div class="stat-delta down">custo</div></div>
+      <div class="stat-card"><div class="stat-label">🍔 Alimentação</div><div class="stat-value red" id="d-alim">R$ 0</div><div class="stat-delta down">custo</div></div>
+    </div>
+    <div class="section-title">Metas</div>
+    <div class="meta-card"><div class="meta-row"><div class="meta-name">🎯 Meta Diária</div><div class="meta-pct" id="m-dp">0%</div></div><div class="meta-bar-bg"><div class="meta-bar-fill" id="m-db" style="width:0%;background:var(--green)"></div></div><div class="meta-vals"><span id="m-dc">R$ 0</span><span id="m-dg">/ R$ 200</span></div></div>
+    <div class="meta-card"><div class="meta-row"><div class="meta-name">📅 Meta Semanal</div><div class="meta-pct" id="m-sp">0%</div></div><div class="meta-bar-bg"><div class="meta-bar-fill" id="m-sb" style="width:0%;background:var(--blue)"></div></div><div class="meta-vals"><span id="m-sc">R$ 0</span><span id="m-sg">/ R$ 1.400</span></div></div>
+    <div class="meta-card"><div class="meta-row"><div class="meta-name">🏆 Meta Mensal</div><div class="meta-pct" id="m-mp">0%</div></div><div class="meta-bar-bg"><div class="meta-bar-fill" id="m-mb" style="width:0%;background:var(--gold)"></div></div><div class="meta-vals"><span id="m-mc">R$ 0</span><span id="m-mg">/ R$ 6.000</span></div></div>
+    <div class="section-title" style="margin-top:20px">Evolução da Semana</div>
+    <div class="chart-card"><div class="chart-wrap"><canvas id="wChart"></canvas></div></div>
+    <div class="section-title">Lançamentos Recentes</div>
+    <div class="chart-card" id="g-list" style="padding:16px"></div>
+  </div>
+
+  <!-- GAME -->
+  <div id="t-game" class="main fade-in hidden">
+    <div style="font-size:22px;font-weight:700;margin-bottom:4px">🏆 Performance</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Evolua de nível e conquiste badges</div>
+    <div class="level-card">
+      <div class="level-glow"></div>
+      <div class="level-header"><div><div style="font-size:11px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.8px">Nível atual</div><div style="font-size:20px;font-weight:700" id="lv-name">🌱 Iniciante</div></div><div class="level-badge" id="lv-num">Nível 1</div></div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase">Experiência (XP)</div>
+      <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-bar" style="width:25%"></div></div>
+      <div class="xp-vals"><span id="xp-cur" style="color:var(--green);font-weight:600">50 XP</span><span id="xp-nxt" style="color:var(--text3)">/ 200 XP</span></div>
+    </div>
+    <div class="streak-card">
+      <div class="section-title" style="margin-bottom:0">🔥 Sequência <span class="section-sub" style="color:var(--red);font-weight:700"><span id="sk-d">1</span> dias!</span></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">Continue para ganhar bônus de XP</div>
+      <div class="days-row" id="sk-days"></div>
+    </div>
+    <div class="section-title">Conquistas</div>
+    <div class="badges-grid" id="bdg-grid"></div>
+    <div class="section-title">Ranking da Semana</div>
+    <div class="chart-card" style="padding:16px"><div id="rank-list"></div></div>
+  </div>
+
+  <!-- SHARE -->
+  <div id="t-share" class="main fade-in hidden">
+    <div style="font-size:22px;font-weight:700;margin-bottom:4px">📲 Compartilhar</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Mostre seus resultados!</div>
+    <div class="trophy-card">
+      <span class="trophy-big">🏆</span>
+      <div class="trophy-label">Resultado do Dia</div>
+      <div class="trophy-value" id="sh-bruto">R$ 0,00</div>
+      <div class="trophy-lucro">Lucro líquido: <span id="sh-lucro">R$ 0,00</span></div>
+      <div class="trophy-stats">
+        <div class="trophy-stat"><div class="trophy-stat-val" id="sh-cor" style="color:var(--blue)">0</div><div class="trophy-stat-label">corridas</div></div>
+        <div class="trophy-stat"><div class="trophy-stat-val" id="sh-hrs" style="color:var(--gold)">0h</div><div class="trophy-stat-label">online</div></div>
+        <div class="trophy-stat"><div class="trophy-stat-val" id="sh-med" style="color:var(--green)">R$ 0</div><div class="trophy-stat-label">por corrida</div></div>
+      </div>
+      <div class="perf-seal" id="sh-seal">⭐ Comece a registrar</div>
+      <div class="motiv-msg" id="sh-motiv">"Cada corrida é um passo rumo à liberdade financeira."</div>
+      <div class="watermark">DriverFlow • Controle Financeiro para Motoristas</div>
+      <button class="btn-share" onclick="doShare()">📤 Compartilhar resultado</button>
+    </div>
+    <div class="section-title">Resumo do Mês</div>
+    <div class="chart-card" style="padding:20px">
+      <div class="grid2" style="gap:12px">
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase">Faturamento</div><div style="font-size:24px;font-weight:700;color:var(--green);font-family:var(--mono)" id="mn-fat">R$ 0</div></div>
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase">Corridas</div><div style="font-size:24px;font-weight:700;color:var(--blue);font-family:var(--mono)" id="mn-cor">0</div></div>
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase">Horas</div><div style="font-size:24px;font-weight:700;color:var(--gold);font-family:var(--mono)" id="mn-hrs">0h</div></div>
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase">Lucro</div><div style="font-size:24px;font-weight:700;color:var(--green);font-family:var(--mono)" id="mn-luc">R$ 0</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="t-profile" class="main fade-in hidden">
+    <div style="font-size:22px;font-weight:700;margin-bottom:20px">👤 Perfil</div>
+    <div class="profile-card">
+      <div class="profile-avatar" id="p-av">DF</div>
+      <div>
+        <div style="font-size:19px;font-weight:700" id="p-name">Motorista</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:2px" id="p-email">email@exemplo.com</div>
+        <div style="font-size:12px;color:var(--green);margin-top:4px" id="p-plat">🚗 Uber</div>
+        <div class="plano-badge plano-ativo" id="p-plano">✓ Plano ativo</div>
+      </div>
+    </div>
+    <div class="section-title">Configuração de Metas</div>
+    <div class="meta-card">
+      <div class="inp-group" style="margin-bottom:14px"><label class="inp-label">Meta Diária (R$)</label><input class="inp" type="number" id="gd" placeholder="200" inputmode="numeric"></div>
+      <div class="inp-group" style="margin-bottom:14px"><label class="inp-label">Meta Semanal (R$)</label><input class="inp" type="number" id="gs" placeholder="1400" inputmode="numeric"></div>
+      <div class="inp-group" style="margin-bottom:20px"><label class="inp-label">Meta Mensal (R$)</label><input class="inp" type="number" id="gm" placeholder="6000" inputmode="numeric"></div>
+      <button class="btn-primary" onclick="saveMetas()">Salvar Metas ✓</button>
+    </div>
+    <div class="section-title" style="margin-top:8px">Estatísticas Gerais</div>
+    <div class="grid2">
+      <div class="stat-card"><div class="stat-label">Total corridas</div><div class="stat-value blue" id="p-rides">0</div></div>
+      <div class="stat-card"><div class="stat-label">Total faturado</div><div class="stat-value green" id="p-fat">R$ 0</div></div>
+    </div>
+    <button class="btn-ghost logout-btn" onclick="doLogout()">Sair da conta</button>
+  </div>
+
+  <nav class="bottomnav">
+    <div class="nav-item active" id="n-dashboard" onclick="setTab('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></div>
+    <div class="nav-item" id="n-game" onclick="setTab('game')"><span class="nav-icon">🏆</span><span class="nav-label">Conquistas</span></div>
+    <div class="nav-item" id="n-share" onclick="setTab('share')"><span class="nav-icon">📲</span><span class="nav-label">Compartilhar</span></div>
+    <div class="nav-item" id="n-profile" onclick="setTab('profile')"><span class="nav-icon">👤</span><span class="nav-label">Perfil</span></div>
+  </nav>
+  <button class="add-btn" id="fab" onclick="openModal()">+</button>
+
+  <!-- MODAL LANÇAMENTO -->
+  <div class="modal-overlay hidden" id="modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Novo Lançamento</div>
+      <div class="seg-control">
+        <div class="seg-opt active" onclick="setSeg(this,'receita')">💰 Receita</div>
+        <div class="seg-opt" onclick="setSeg(this,'gasto')">💸 Gasto</div>
+      </div>
+      <div id="f-receita">
+        <div class="inp-group"><label class="inp-label">Valor recebido (R$)</label><input class="inp" type="number" id="e-val" placeholder="0,00" step="0.01" inputmode="decimal"></div>
+        <div class="inp-group"><label class="inp-label">Nº de corridas</label><input class="inp" type="number" id="e-cor" placeholder="1" value="1" inputmode="numeric"></div>
+        <div class="inp-group"><label class="inp-label">Horas trabalhadas</label><input class="inp" type="number" id="e-hrs" placeholder="0" step="0.5" inputmode="decimal"></div>
+        <div class="inp-group"><label class="inp-label">Plataforma</label><select class="inp" id="e-plat"><option>Uber</option><option>99</option><option>InDriver</option><option>Ambas</option></select></div>
+      </div>
+      <div id="f-gasto" class="hidden">
+        <div class="type-grid">
+          <div class="type-opt active" onclick="setGT(this,'fuel')"><div class="type-opt-icon">⛽</div><div class="type-opt-label">Combustível</div></div>
+          <div class="type-opt" onclick="setGT(this,'food')"><div class="type-opt-icon">🍔</div><div class="type-opt-label">Alimentação</div></div>
+          <div class="type-opt" onclick="setGT(this,'maint')"><div class="type-opt-icon">🔧</div><div class="type-opt-label">Manutenção</div></div>
+          <div class="type-opt" onclick="setGT(this,'other')"><div class="type-opt-icon">📝</div><div class="type-opt-label">Outros</div></div>
+        </div>
+        <div class="inp-group"><label class="inp-label">Valor (R$)</label><input class="inp" type="number" id="g-val" placeholder="0,00" step="0.01" inputmode="decimal"></div>
+        <div class="inp-group"><label class="inp-label">Descrição (opcional)</label><input class="inp" type="text" id="g-desc" placeholder="ex: Posto Shell"></div>
+      </div>
+      <button class="btn-primary" onclick="saveEntry()" style="margin-top:4px">Registrar lançamento ✓</button>
+      <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- EDIT ENTRY MODAL -->
+  <div class="edit-overlay hidden" id="e-modal" onclick="if(event.target===this)closeEdit()">
+    <div class="edit-card">
+      <div class="edit-title" id="e-modal-title">✏️ Editar Lançamento</div>
+      <input type="hidden" id="e-id">
+      <input type="hidden" id="e-type">
+      <!-- RECEITA FIELDS -->
+      <div id="e-rec-fields">
+        <div class="inp-group"><label class="inp-label">Valor recebido (R$)</label><input class="inp" type="number" id="e-rval" placeholder="0,00" step="0.01" inputmode="decimal"></div>
+        <div class="inp-group"><label class="inp-label">Nº de corridas</label><input class="inp" type="number" id="e-rcor" placeholder="1" inputmode="numeric"></div>
+        <div class="inp-group"><label class="inp-label">Horas trabalhadas</label><input class="inp" type="number" id="e-rhrs" placeholder="0" step="0.5" inputmode="decimal"></div>
+        <div class="inp-group" style="margin-bottom:20px"><label class="inp-label">Plataforma</label><select class="inp" id="e-rplat"><option>Uber</option><option>99</option><option>InDriver</option><option>Ambas</option></select></div>
+      </div>
+      <!-- GASTO FIELDS -->
+      <div id="e-gas-fields" class="hidden">
+        <div class="inp-group"><label class="inp-label">Categoria</label><select class="inp" id="e-gtype"><option value="fuel">⛽ Combustível</option><option value="food">🍔 Alimentação</option><option value="maint">🔧 Manutenção</option><option value="other">📝 Outros</option></select></div>
+        <div class="inp-group"><label class="inp-label">Valor (R$)</label><input class="inp" type="number" id="e-gval" placeholder="0,00" step="0.01" inputmode="decimal"></div>
+        <div class="inp-group" style="margin-bottom:20px"><label class="inp-label">Descrição</label><input class="inp" type="text" id="e-gdesc" placeholder="ex: Posto Shell"></div>
+      </div>
+      <div class="edit-actions">
+        <button class="btn-cancel" onclick="closeEdit()">Cancelar</button>
+        <button class="btn-save" onclick="saveEdit()">Salvar ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MEMBER MODAL (ADMIN) -->
+<div class="edit-overlay hidden" id="add-modal" onclick="if(event.target===this)closeAddMember()">
+  <div class="edit-card">
+    <div class="edit-title">➕ Adicionar Membro</div>
+    <div class="inp-group"><label class="inp-label">Nome completo</label><input class="inp" type="text" id="am-name" placeholder="João Silva"></div>
+    <div class="inp-group"><label class="inp-label">Email</label><input class="inp" type="email" id="am-email" placeholder="joao@email.com"></div>
+    <div class="inp-group"><label class="inp-label">Plataforma</label><select class="inp" id="am-plat"><option value="Uber">🚗 Uber</option><option value="99">🟡 99</option><option value="InDriver">🟢 InDriver</option><option value="Ambas">🔀 Várias</option></select></div>
+    <div class="inp-group"><label class="inp-label">Senha</label><div class="pass-wrap"><input class="inp" type="password" id="am-pass" placeholder="Mínimo 6 caracteres"><button class="pass-eye" onclick="tp('am-pass',this)">👁️</button></div></div>
+    <div class="inp-group" style="margin-bottom:20px">
+      <label class="inp-label">Acesso</label>
+      <select class="inp" id="am-ativo">
+        <option value="true">✅ Ativo imediatamente</option>
+        <option value="trial">⏳ Trial 3 dias</option>
+        <option value="false">🔒 Bloqueado (ativar depois)</option>
+      </select>
+    </div>
+    <div class="edit-actions">
+      <button class="btn-cancel" onclick="closeAddMember()">Cancelar</button>
+      <button class="btn-save" onclick="saveAddMember()">Adicionar ✓</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const SB='https://bsfbwgylyqbmohcrdicz.supabase.co';
+const KEY='sb_publishable_78Pad7ihEIFfqY_eCYzFLg__cIOZmHk';
+const ADM_EMAIL='contatovictoravelino@gmail.com';
+const ADM_PASS='Acesso.123#';
+const TRIAL_DAYS=3;
+
+let CU=null,EN=[],CF='Hoje',ET='receita',GT='fuel',WC=null;
+
+const H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
+async function GET(t,q=''){try{const r=await fetch(`${SB}/rest/v1/${t}${q}`,{headers:H});return r.ok?r.json():null;}catch{return null;}}
+async function POST(t,b){try{const r=await fetch(`${SB}/rest/v1/${t}`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(b)});return r.ok?r.json():null;}catch{return null;}}
+async function PATCH(t,q,b){try{const r=await fetch(`${SB}/rest/v1/${t}${q}`,{method:'PATCH',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(b)});return r.ok?r.json():null;}catch{return null;}}
+async function DEL(t,q){try{const r=await fetch(`${SB}/rest/v1/${t}${q}`,{method:'DELETE',headers:H});return r.ok;}catch{return false;}}
+
+// TRIAL CHECK
+function checkTrial(u){
+  if(u.ativo)return'active';
+  if(!u.trial_start)return'blocked';
+  const days=Math.floor((Date.now()-new Date(u.trial_start).getTime())/(864e5));
+  if(days<TRIAL_DAYS)return'trial';
+  return'blocked';
+}
+function trialDaysLeft(u){
+  if(!u.trial_start)return 0;
+  const days=Math.floor((Date.now()-new Date(u.trial_start).getTime())/(864e5));
+  return Math.max(0,TRIAL_DAYS-days);
+}
+
+async function init(){
+  ss('s-loading');
+  const sv=localStorage.getItem('dfsv');
+  if(sv){
+    try{
+      const s=JSON.parse(sv);
+      if(s.email===ADM_EMAIL){CU={id:'admin',name:'Admin',email:ADM_EMAIL};ss('s-admin');await renderAdmin();return;}
+      const res=await GET('profiles',`?id=eq.${s.id}&select=*`);
+      if(res&&res.length){
+        CU=res[0];
+        const status=checkTrial(CU);
+        if(status==='blocked'){ss('s-blocked');return;}
+        await loadEN();ss('s-app');renderApp();return;
+      }
+    }catch{}
+    localStorage.removeItem('dfsv');
+  }
+  ss('s-login');
+}
+
+function ss(id){['s-loading','s-login','s-register','s-forgot','s-blocked','s-admin','s-app'].forEach(x=>document.getElementById(x)?.classList.toggle('hidden',x!==id));}
+function tp(id,btn){const i=document.getElementById(id);const show=i.type==='password';i.type=show?'text':'password';btn.textContent=show?'🙈':'👁️';}
+
+async function doLogin(){
+  const email=document.getElementById('l-email').value.trim().toLowerCase();
+  const pass=document.getElementById('l-pass').value;
+  if(!email||!pass){toast('Preencha email e senha','err');return;}
+  if(email===ADM_EMAIL&&pass===ADM_PASS){CU={id:'admin',name:'Admin',email:ADM_EMAIL};localStorage.setItem('dfsv',JSON.stringify({id:'admin',email:ADM_EMAIL}));ss('s-admin');await renderAdmin();return;}
+  toast('Verificando...');
+  const res=await GET('profiles',`?email=eq.${encodeURIComponent(email)}&select=*`);
+  if(!res||!res.length){toast('Email não cadastrado','err');return;}
+  const u=res[0];
+  if(u.pass!==pass){toast('Senha incorreta','err');return;}
+  CU=u;localStorage.setItem('dfsv',JSON.stringify({id:u.id,email:u.email}));
+  const status=checkTrial(CU);
+  if(status==='blocked'){ss('s-blocked');return;}
+  await loadEN();ss('s-app');renderApp();
+}
+
+async function doRegister(){
+  const name=document.getElementById('r-name').value.trim();
+  const email=document.getElementById('r-email').value.trim().toLowerCase();
+  const plat=document.getElementById('r-plat').value;
+  const pass=document.getElementById('r-pass').value;
+  if(!name||!email||!pass){toast('Preencha todos os campos','err');return;}
+  if(pass.length<6){toast('Senha muito curta (mín. 6)','err');return;}
+  if(!/\S+@\S+\.\S+/.test(email)){toast('Email inválido','err');return;}
+  toast('Criando conta...');
+  const ex=await GET('profiles',`?email=eq.${encodeURIComponent(email)}&select=id`);
+  if(ex&&ex.length){toast('Email já cadastrado','err');return;}
+  const id=crypto.randomUUID();
+  const trial_start=new Date().toISOString();
+  const res=await POST('profiles',[{id,name,email,pass,plat,ativo:false,plano:'trial',trial_start,streak:1,last_date:'',goals:{d:200,s:1400,m:6000}}]);
+  if(!res){toast('Erro ao criar conta. Tente novamente.','err');return;}
+  CU=res[0];localStorage.setItem('dfsv',JSON.stringify({id:CU.id,email:CU.email}));
+  await loadEN();ss('s-app');renderApp();
+  toast('Bem-vindo! Aproveite seus 3 dias grátis 🎉');
+}
+
+async function doForgot(){
+  const email=document.getElementById('f-email').value.trim().toLowerCase();
+  if(!email){toast('Informe o email','err');return;}
+  const res=await GET('profiles',`?email=eq.${encodeURIComponent(email)}&select=id`);
+  if(!res||!res.length){toast('Email não encontrado','err');return;}
+  toast('Entre em contato com o suporte para redefinir sua senha');
+}
+
+function doLogout(){localStorage.removeItem('dfsv');CU=null;EN=[];ss('s-login');}
+
+async function loadEN(){if(!CU)return;const r=await GET('entries',`?user_id=eq.${CU.id}&order=ts.desc`);EN=r||[];}
+
+function filtered(type){
+  const now=new Date(),today=now.toDateString(),yday=new Date(now-864e5).toDateString();
+  return EN.filter(e=>{
+    if(type&&e.type!==type)return false;
+    const d=new Date(e.ts);
+    if(CF==='Hoje')return d.toDateString()===today;
+    if(CF==='Ontem')return d.toDateString()===yday;
+    if(CF==='7 dias')return now-d<7*864e5;
+    if(CF==='30 dias')return now-d<30*864e5;
+    if(CF==='Este mês')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+    if(CF==='Mês ant.'){const pm=new Date(now.getFullYear(),now.getMonth()-1,1);return d.getMonth()===pm.getMonth()&&d.getFullYear()===pm.getFullYear();}
+    return true;
+  });
+}
+
+const fmt=n=>'R$ '+n.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const fmtK=n=>'R$ '+Math.round(n).toLocaleString('pt-BR');
+const gTime=()=>{const h=new Date().getHours();return h<12?'Bom dia,':h<18?'Boa tarde,':'Boa noite,';};
+const ini=n=>n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+function renderApp(){
+  if(!CU)return;
+  const i=ini(CU.name);
+  document.getElementById('av').textContent=i;
+  document.getElementById('g-name').textContent=CU.name.split(' ')[0];
+  document.getElementById('g-time').textContent=gTime();
+  document.getElementById('g-streak').textContent=CU.streak||1;
+  document.getElementById('sk-d').textContent=CU.streak||1;
+  const g=CU.goals||{d:200,s:1400,m:6000};
+  document.getElementById('gd').value=g.d;
+  document.getElementById('gs').value=g.s;
+  document.getElementById('gm').value=g.m;
+  document.getElementById('p-av').textContent=i;
+  document.getElementById('p-name').textContent=CU.name;
+  document.getElementById('p-email').textContent=CU.email;
+  document.getElementById('p-plat').textContent='🚗 '+CU.plat;
+  // status badge
+  const pb=document.getElementById('p-plano');
+  const status=checkTrial(CU);
+  if(CU.ativo){pb.textContent='✓ Plano ativo';pb.className='plano-badge plano-ativo';}
+  else if(status==='trial'){const d=trialDaysLeft(CU);pb.textContent=`⏳ Teste grátis: ${d} dia${d!==1?'s':''} restante${d!==1?'s':''}`;pb.className='plano-badge plano-trial';}
+  else{pb.textContent='✗ Plano inativo';pb.className='plano-badge plano-inativo';}
+  // trial banner
+  const banner=document.getElementById('trial-banner');
+  if(status==='trial'){
+    const d=trialDaysLeft(CU);
+    document.getElementById('trial-text').textContent=`⏳ Teste grátis: ${d} dia${d!==1?'s':''} restante${d!==1?'s':''}`;
+    banner.classList.remove('hidden');
+  }else{banner.classList.add('hidden');}
+  updateDash();buildChart();renderEntries();renderBadges();renderRanking();renderStreak();
+}
+
+function updateDash(){
+  const rec=filtered('receita'),gas=filtered('gasto');
+  const bruto=rec.reduce((a,e)=>a+(+e.valor),0);
+  const gastos=gas.reduce((a,e)=>a+(+e.valor),0);
+  const lucro=bruto-gastos;
+  const cor=rec.reduce((a,e)=>a+(+e.corridas||0),0);
+  const hrs=rec.reduce((a,e)=>a+(+e.horas||0),0);
+  const comb=gas.filter(e=>e.g_type==='fuel').reduce((a,e)=>a+(+e.valor),0);
+  const alim=gas.filter(e=>e.g_type==='food').reduce((a,e)=>a+(+e.valor),0);
+  const med=cor>0?bruto/cor:0,ph=hrs>0?bruto/hrs:0;
+  const go=CU.goals||{d:200,s:1400,m:6000};
+  const dp=Math.min(100,Math.round(bruto/go.d*100));
+  const sp=Math.min(100,Math.round(bruto/go.s*100));
+  const mp=Math.min(100,Math.round(bruto/go.m*100));
+  document.getElementById('h-bruto').textContent=fmt(bruto);
+  document.getElementById('h-lucro').textContent=fmt(lucro);
+  document.getElementById('h-perf').textContent=bruto>0?dp+'% da meta diária':'Registre sua primeira corrida';
+  document.getElementById('d-cor').textContent=cor;
+  document.getElementById('d-cord').textContent=cor+' corridas';
+  document.getElementById('d-hrs').textContent=hrs.toFixed(1)+'h';
+  document.getElementById('d-med').textContent=fmtK(med);
+  document.getElementById('d-ph').textContent=fmtK(ph);
+  document.getElementById('d-comb').textContent=fmt(comb);
+  document.getElementById('d-alim').textContent=fmt(alim);
+  document.getElementById('m-dp').textContent=dp+'%';document.getElementById('m-db').style.width=dp+'%';document.getElementById('m-dc').textContent=fmtK(bruto);document.getElementById('m-dg').textContent='/ '+fmtK(go.d);
+  document.getElementById('m-sp').textContent=sp+'%';document.getElementById('m-sb').style.width=sp+'%';document.getElementById('m-sc').textContent=fmtK(bruto);document.getElementById('m-sg').textContent='/ '+fmtK(go.s);
+  document.getElementById('m-mp').textContent=mp+'%';document.getElementById('m-mb').style.width=mp+'%';document.getElementById('m-mc').textContent=fmtK(bruto);document.getElementById('m-mg').textContent='/ '+fmtK(go.m);
+  const allR=EN.filter(e=>e.type==='receita');
+  document.getElementById('p-rides').textContent=allR.reduce((a,e)=>a+(+e.corridas||0),0);
+  document.getElementById('p-fat').textContent=fmtK(allR.reduce((a,e)=>a+(+e.valor),0));
+}
+
+function buildChart(){
+  const days=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const now=new Date();const labels=[],data=[];
+  for(let i=6;i>=0;i--){const d=new Date(now-i*864e5);labels.push(days[d.getDay()]);data.push(EN.filter(e=>e.type==='receita'&&new Date(e.ts).toDateString()===d.toDateString()).reduce((a,e)=>a+(+e.valor),0));}
+  const ctx=document.getElementById('wChart');
+  if(WC)WC.destroy();
+  WC=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'R$',data,backgroundColor:'#00FF9425',borderColor:'#00FF94',borderWidth:2,borderRadius:10,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#8899AA',font:{size:11}}},y:{grid:{color:'#1E2A3A'},ticks:{color:'#8899AA',font:{size:11},callback:v=>'R$'+v}}}}});
+}
+
+function renderEntries(){
+  const all=EN.slice(0,15);
+  const tmap={fuel:{icon:'⛽',bg:'#FF6B3518',label:'Combustível'},food:{icon:'🍔',bg:'#FF3B5C15',label:'Alimentação'},maint:{icon:'🔧',bg:'#4A9EFF15',label:'Manutenção'},other:{icon:'📝',bg:'#A855F715',label:'Outro'}};
+  const el=document.getElementById('g-list');
+  if(!all.length){el.innerHTML='<div class="empty-state"><div class="empty-big">📋</div>Nenhum lançamento ainda.<br>Toque em + para registrar</div>';return;}
+  el.innerHTML=all.map(e=>{
+    if(e.type==='receita'){
+      return`<div class="entry-row">
+        <div class="entry-icon" style="background:#00FF9415">🚗</div>
+        <div class="entry-info"><div class="entry-name">${e.plat||'Corrida'} • ${e.corridas||1} corrida${(e.corridas||1)>1?'s':''}</div><div class="entry-date">${new Date(e.ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>
+        <div class="entry-val green">+${fmt(+e.valor)}</div>
+        <div class="entry-actions"><button class="entry-btn btn-edit" onclick="openEdit('${e.id}')">✏️</button><button class="entry-btn btn-del" onclick="delEntry('${e.id}')">🗑️</button></div>
+      </div>`;
+    }else{
+      const t=tmap[e.g_type]||tmap.other;
+      return`<div class="entry-row">
+        <div class="entry-icon" style="background:${t.bg}">${t.icon}</div>
+        <div class="entry-info"><div class="entry-name">${e.descricao||t.label}</div><div class="entry-date">${new Date(e.ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>
+        <div class="entry-val red">-${fmt(+e.valor)}</div>
+        <div class="entry-actions"><button class="entry-btn btn-edit" onclick="openEdit('${e.id}')">✏️</button><button class="entry-btn btn-del" onclick="delEntry('${e.id}')">🗑️</button></div>
+      </div>`;
+    }
+  }).join('');
+}
+
+const BDGS=[
+  {id:'first',icon:'🚀',name:'Primeiro Passo',fn:e=>e.filter(x=>x.type==='receita').length>=1},
+  {id:'r100',icon:'💯',name:'R$ 100 no dia',fn:e=>{const t=new Date().toDateString();return e.filter(x=>x.type==='receita'&&new Date(x.ts).toDateString()===t).reduce((a,x)=>a+(+x.valor),0)>=100;}},
+  {id:'r500',icon:'💰',name:'R$ 500 no dia',fn:e=>{const t=new Date().toDateString();return e.filter(x=>x.type==='receita'&&new Date(x.ts).toDateString()===t).reduce((a,x)=>a+(+x.valor),0)>=500;}},
+  {id:'sk7',icon:'🔥',name:'7 dias seguidos',fn:_=>(CU.streak||0)>=7},
+  {id:'sk30',icon:'🌟',name:'30 dias seguidos',fn:_=>(CU.streak||0)>=30},
+  {id:'meta',icon:'🎯',name:'Meta diária',fn:e=>{const t=new Date().toDateString();return e.filter(x=>x.type==='receita'&&new Date(x.ts).toDateString()===t).reduce((a,x)=>a+(+x.valor),0)>=(CU.goals?.d||200);}},
+  {id:'r50',icon:'🚗',name:'50 corridas',fn:e=>e.filter(x=>x.type==='receita').reduce((a,x)=>a+(+x.corridas||0),0)>=50},
+  {id:'top',icon:'⭐',name:'Top Driver',fn:e=>{const r=e.filter(x=>x.type==='receita');const b=r.reduce((a,x)=>a+(+x.valor),0);const c=r.reduce((a,x)=>a+(+x.corridas||0),0);return c>0&&b/c>=30;}},
+];
+
+function renderBadges(){
+  const earned=BDGS.filter(b=>b.fn(EN)).map(b=>b.id);
+  document.getElementById('bdg-grid').innerHTML=BDGS.map(b=>`<div class="badge-item ${earned.includes(b.id)?'earned':''}"><div class="badge-emoji">${b.icon}</div><div class="badge-name">${b.name}</div></div>`).join('');
+  const xp=50+(earned.length*100),lvl=Math.min(9,Math.floor(xp/200)+1),pct=Math.round((xp%200)/200*100);
+  const names=['','🌱 Iniciante','⚡ Aprendiz','🌟 Regular','🥉 Experiente','🥇 Profissional','💎 Expert','🔱 Mestre','👑 Elite','🏆 Lendário'];
+  document.getElementById('lv-name').textContent=names[lvl];
+  document.getElementById('lv-num').textContent='Nível '+lvl;
+  document.getElementById('xp-bar').style.width=pct+'%';
+  document.getElementById('xp-cur').textContent=xp+' XP';
+  document.getElementById('xp-nxt').textContent='/ '+(Math.floor(xp/200)+1)*200+' XP → Nível '+(lvl+1);
+}
+
+function renderStreak(){
+  const s=Math.min(CU.streak||1,7),days=['Seg','Ter','Qua','Qui','Sex','Sáb','HOJ'];
+  document.getElementById('sk-days').innerHTML=days.map((d,i)=>`<div class="day-dot ${i===6?'today':i<s?'done':'miss'}">${d}</div>`).join('');
+}
+
+function maskName(n){const p=n.trim().split(' ');return p.length===1?p[0].slice(0,3)+'•••':p[0]+' '+p[p.length-1][0]+'•••';}
+
+function renderRanking(){
+  const myB=EN.filter(e=>e.type==='receita'&&new Date()-new Date(e.ts)<7*864e5).reduce((a,e)=>a+(+e.valor),0);
+  const sd=new Date().getDay(),base=Math.max(myB,300);
+  const pool=[{n:'Lucas Santos'},{n:'Ana Carvalho'},{n:'Pedro Souza'},{n:'Maria Lima'}];
+  const fakes=[Math.round(base*1.4+sd*37),Math.round(base*1.1+sd*19),Math.round(base*.75+sd*11),Math.round(base*.5+sd*7)];
+  const all=[...pool.map((p,i)=>({name:maskName(p.n),val:fakes[i],me:false})),{name:CU.name.split(' ')[0]+' (você)',val:Math.round(myB),me:true}].sort((a,b)=>b.val-a.val);
+  document.getElementById('rank-list').innerHTML=all.map((r,i)=>{
+    const pos=i+1,med=pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
+    const gc=r.me?'var(--green3)':pos===1?'var(--gold2)':'var(--bg3)';
+    const bc=r.me?'#00FF9440':pos===1?'#FFD70050':'var(--border)';
+    const tc=r.me?'var(--green)':pos===1?'var(--gold)':'var(--text2)';
+    return`<div class="rank-row"><div class="rank-num" style="background:${gc};border:1px solid ${bc};color:${tc};font-size:${med?'16px':'13px'}">${med||pos}</div><div style="flex:1;font-size:14px;font-weight:${r.me?700:400};color:${r.me?'var(--green)':'var(--text)'}">${r.name}</div><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:${tc}">R$ ${r.val.toLocaleString('pt-BR')}</div></div>`;
+  }).join('');
+}
+
+function updateShare(){
+  const now=new Date(),today=now.toDateString();
+  const tr=EN.filter(e=>e.type==='receita'&&new Date(e.ts).toDateString()===today);
+  const tg=EN.filter(e=>e.type==='gasto'&&new Date(e.ts).toDateString()===today);
+  const bruto=tr.reduce((a,e)=>a+(+e.valor),0),gastos=tg.reduce((a,e)=>a+(+e.valor),0);
+  const cor=tr.reduce((a,e)=>a+(+e.corridas||0),0),hrs=tr.reduce((a,e)=>a+(+e.horas||0),0);
+  document.getElementById('sh-bruto').textContent=fmt(bruto);
+  document.getElementById('sh-lucro').textContent=fmt(bruto-gastos);
+  document.getElementById('sh-cor').textContent=cor;
+  document.getElementById('sh-hrs').textContent=hrs.toFixed(1)+'h';
+  document.getElementById('sh-med').textContent=fmtK(cor>0?bruto/cor:0);
+  const pct=bruto>0?Math.round(bruto/(CU.goals?.d||200)*100):0;
+  document.getElementById('sh-seal').textContent=pct>=100?'🏆 Meta Batida!':pct>=75?'🔥 Arrasando!':pct>=50?'⭐ Bom Ritmo':bruto>0?'💪 Em Frente':'📝 Registre corridas';
+  const mv=['Cada corrida é um passo rumo à liberdade financeira.','Você está construindo seu patrimônio viagem por viagem.','Foco e disciplina são seus maiores aliados.','Seu esforço de hoje é o resultado de amanhã.','Motoristas de sucesso não esperam, eles realizam!'];
+  document.getElementById('sh-motiv').textContent='"'+mv[now.getDay()%mv.length]+'"';
+  const mr=EN.filter(e=>{const d=new Date(e.ts);return e.type==='receita'&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const mg=EN.filter(e=>{const d=new Date(e.ts);return e.type==='gasto'&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const mB=mr.reduce((a,e)=>a+(+e.valor),0);
+  document.getElementById('mn-fat').textContent=fmtK(mB);
+  document.getElementById('mn-cor').textContent=mr.reduce((a,e)=>a+(+e.corridas||0),0);
+  document.getElementById('mn-hrs').textContent=mr.reduce((a,e)=>a+(+e.horas||0),0).toFixed(1)+'h';
+  document.getElementById('mn-luc').textContent=fmtK(mB-mg.reduce((a,e)=>a+(+e.valor),0));
+}
+
+function setTab(t){
+  ['dashboard','game','share','profile'].forEach(id=>{
+    document.getElementById('t-'+id).classList.toggle('hidden',id!==t);
+    document.getElementById('n-'+id).classList.toggle('active',id===t);
+  });
+  document.getElementById('fab').classList.toggle('hidden',t!=='dashboard');
+  if(t==='game'){renderBadges();renderRanking();renderStreak();}
+  if(t==='share')updateShare();
+}
+
+function setFilter(el,f){
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');CF=f;updateDash();buildChart();renderEntries();
+}
+
+async function saveMetas(){
+  const goals={d:+document.getElementById('gd').value||200,s:+document.getElementById('gs').value||1400,m:+document.getElementById('gm').value||6000};
+  await PATCH('profiles',`?id=eq.${CU.id}`,{goals});
+  CU.goals=goals;toast('Metas salvas! 🎯');updateDash();
+}
+
+function openModal(){document.getElementById('modal').classList.remove('hidden');}
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+function setSeg(el,t){document.querySelectorAll('.seg-opt').forEach(e=>e.classList.remove('active'));el.classList.add('active');ET=t;document.getElementById('f-receita').classList.toggle('hidden',t!=='receita');document.getElementById('f-gasto').classList.toggle('hidden',t!=='gasto');}
+function setGT(el,t){document.querySelectorAll('.type-opt').forEach(e=>e.classList.remove('active'));el.classList.add('active');GT=t;}
+
+async function saveEntry(){
+  if(!CU)return;
+  const now=new Date(),todayStr=now.toDateString();
+  if(ET==='receita'){
+    const val=parseFloat(document.getElementById('e-val').value);
+    if(!val||val<=0){toast('Valor inválido','err');return;}
+    const cor=parseInt(document.getElementById('e-cor').value)||1;
+    const hrs=parseFloat(document.getElementById('e-hrs').value)||0;
+    const plat=document.getElementById('e-plat').value;
+    let streak=CU.streak||1;
+    if(CU.last_date!==todayStr){streak++;await PATCH('profiles',`?id=eq.${CU.id}`,{streak,last_date:todayStr});CU.streak=streak;CU.last_date=todayStr;document.getElementById('g-streak').textContent=streak;document.getElementById('sk-d').textContent=streak;}
+    const res=await POST('entries',[{user_id:CU.id,type:'receita',valor:val,corridas:cor,horas:hrs,plat,ts:Date.now()}]);
+    if(res){EN.unshift(res[0]);document.getElementById('e-val').value='';document.getElementById('e-hrs').value='';document.getElementById('e-cor').value='1';toast('🚀 Corrida registrada! +25 XP');closeModal();updateDash();buildChart();renderEntries();}
+    else toast('Erro ao salvar','err');
+  }else{
+    const val=parseFloat(document.getElementById('g-val').value);
+    if(!val||val<=0){toast('Valor inválido','err');return;}
+    const desc=document.getElementById('g-desc').value.trim();
+    const res=await POST('entries',[{user_id:CU.id,type:'gasto',valor:val,g_type:GT,descricao:desc,ts:Date.now()}]);
+    if(res){EN.unshift(res[0]);document.getElementById('g-val').value='';document.getElementById('g-desc').value='';toast('💸 Gasto registrado');closeModal();updateDash();renderEntries();}
+    else toast('Erro ao salvar','err');
+  }
+}
+
+// EDIT ANY ENTRY (receita ou gasto)
+function openEdit(id){
+  const e=EN.find(x=>x.id===id);if(!e)return;
+  document.getElementById('e-id').value=id;
+  document.getElementById('e-type').value=e.type;
+  if(e.type==='receita'){
+    document.getElementById('e-modal-title').textContent='✏️ Editar Corrida';
+    document.getElementById('e-rec-fields').classList.remove('hidden');
+    document.getElementById('e-gas-fields').classList.add('hidden');
+    document.getElementById('e-rval').value=e.valor;
+    document.getElementById('e-rcor').value=e.corridas||1;
+    document.getElementById('e-rhrs').value=e.horas||0;
+    document.getElementById('e-rplat').value=e.plat||'Uber';
+  }else{
+    document.getElementById('e-modal-title').textContent='✏️ Editar Gasto';
+    document.getElementById('e-rec-fields').classList.add('hidden');
+    document.getElementById('e-gas-fields').classList.remove('hidden');
+    document.getElementById('e-gtype').value=e.g_type||'other';
+    document.getElementById('e-gval').value=e.valor;
+    document.getElementById('e-gdesc').value=e.descricao||'';
+  }
+  document.getElementById('e-modal').classList.remove('hidden');
+}
+
+function closeEdit(){document.getElementById('e-modal').classList.add('hidden');}
+
+async function saveEdit(){
+  const id=document.getElementById('e-id').value;
+  const type=document.getElementById('e-type').value;
+  let body={};
+  if(type==='receita'){
+    const val=parseFloat(document.getElementById('e-rval').value);
+    if(!val||val<=0){toast('Valor inválido','err');return;}
+    body={valor:val,corridas:parseInt(document.getElementById('e-rcor').value)||1,horas:parseFloat(document.getElementById('e-rhrs').value)||0,plat:document.getElementById('e-rplat').value};
+  }else{
+    const val=parseFloat(document.getElementById('e-gval').value);
+    if(!val||val<=0){toast('Valor inválido','err');return;}
+    body={valor:val,g_type:document.getElementById('e-gtype').value,descricao:document.getElementById('e-gdesc').value.trim()};
+  }
+  const res=await PATCH('entries',`?id=eq.${id}`,body);
+  if(res){const idx=EN.findIndex(e=>e.id===id);if(idx>-1)EN[idx]={...EN[idx],...body};closeEdit();updateDash();buildChart();renderEntries();toast('Lançamento atualizado ✓');}
+  else toast('Erro ao atualizar','err');
+}
+
+async function delEntry(id){
+  if(!confirm('Excluir este lançamento?'))return;
+  const ok=await DEL('entries',`?id=eq.${id}`);
+  if(ok){EN=EN.filter(e=>e.id!==id);updateDash();buildChart();renderEntries();toast('Lançamento excluído ✓');}
+  else toast('Erro ao excluir','err');
+}
+
+function doShare(){
+  const today=new Date().toDateString();
+  const bruto=EN.filter(e=>e.type==='receita'&&new Date(e.ts).toDateString()===today).reduce((a,e)=>a+(+e.valor),0);
+  const cor=EN.filter(e=>e.type==='receita'&&new Date(e.ts).toDateString()===today).reduce((a,e)=>a+(+e.corridas||0),0);
+  const txt=`🏆 Resultado de hoje no DriverFlow!\n\n💰 ${fmt(bruto)}\n🚗 ${cor} corridas\n\nBaixe o DriverFlow e controle suas finanças!`;
+  if(navigator.share)navigator.share({title:'DriverFlow',text:txt}).catch(()=>{});
+  else navigator.clipboard.writeText(txt).then(()=>toast('Copiado! Cole onde quiser 📋')).catch(()=>toast('📸 Tire um print desta tela!'));
+}
+
+// ADMIN
+async function renderAdmin(){
+  const users=await GET('profiles','?select=*&order=created_at.desc');
+  if(!users){toast('Erro ao carregar','err');return;}
+  window._AU=users;
+  document.getElementById('a-total').textContent=users.length;
+  document.getElementById('a-ativos').textContent=users.filter(u=>u.ativo||checkTrial(u)==='trial').length;
+  document.getElementById('a-inativos').textContent=users.filter(u=>!u.ativo&&checkTrial(u)!=='trial').length;
+  renderUsers();
+}
+
+function renderUsers(){
+  const q=(document.getElementById('a-search')?.value||'').toLowerCase();
+  const users=(window._AU||[]).filter(u=>!q||u.name?.toLowerCase().includes(q)||u.email?.toLowerCase().includes(q));
+  const el=document.getElementById('a-users');
+  if(!users.length){el.innerHTML='<div class="empty-state"><div class="empty-big">👤</div>Nenhum usuário encontrado</div>';return;}
+  el.innerHTML=users.map(u=>{
+    const av=u.name?ini(u.name):'?';
+    const dt=u.created_at?new Date(u.created_at).toLocaleDateString('pt-BR'):'—';
+    const status=checkTrial(u);
+    const statusLabel=u.ativo?'✓ Ativo':status==='trial'?`⏳ Trial (${trialDaysLeft(u)}d)`:'✗ Inativo';
+    const statusClass=u.ativo?'s-ativo':status==='trial'?'s-trial':'s-inativo';
+    return`<div class="user-card">
+      <div class="user-card-top">
+        <div class="user-av">${av}</div>
+        <div class="user-info"><div class="user-name">${u.name||'Sem nome'}</div><div class="user-email">${u.email}</div></div>
+        <div class="user-status ${statusClass}">${statusLabel}</div>
+      </div>
+      <div class="user-meta">
+        <span class="user-tag">🚗 ${u.plat||'—'}</span>
+        <span class="user-tag">📅 ${dt}</span>
+        <span class="user-tag">${u.plano||'trial'}</span>
+      </div>
+      <div class="user-actions">
+        ${u.ativo
+          ?`<button class="u-btn u-desativar" onclick="adminToggle('${u.id}',false)">🔒 Desativar</button>`
+          :`<button class="u-btn u-ativar" onclick="adminToggle('${u.id}',true)">✅ Ativar</button>`
+        }
+        <button class="u-btn u-trial" onclick="adminExtendTrial('${u.id}')">⏳ +3 dias</button>
+        <button class="u-btn u-senha" onclick="adminSenha('${u.id}')">🔑 Senha</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function adminToggle(id,ativo){
+  const res=await PATCH('profiles',`?id=eq.${id}`,{ativo});
+  if(res){const idx=window._AU.findIndex(u=>u.id===id);if(idx>-1)window._AU[idx].ativo=ativo;await renderAdmin();toast(ativo?'✅ Usuário ativado!':'🔒 Usuário desativado!');}
+  else toast('Erro ao atualizar','err');
+}
+
+async function adminExtendTrial(id){
+  const u=window._AU.find(x=>x.id===id);if(!u)return;
+  const newStart=new Date(Date.now()-((TRIAL_DAYS-3)*864e5)).toISOString();
+  const res=await PATCH('profiles',`?id=eq.${id}`,{trial_start:newStart,ativo:false});
+  if(res){const idx=window._AU.findIndex(x=>x.id===id);if(idx>-1){window._AU[idx].trial_start=newStart;window._AU[idx].ativo=false;}renderUsers();toast('⏳ Trial estendido por +3 dias!');}
+  else toast('Erro ao estender trial','err');
+}
+
+async function adminSenha(id){
+  const nova=prompt('Nova senha para este usuário (mín. 6 caracteres):');
+  if(!nova||nova.length<6){toast('Senha muito curta','err');return;}
+  const res=await PATCH('profiles',`?id=eq.${id}`,{pass:nova});
+  if(res)toast('🔑 Senha alterada com sucesso!');
+  else toast('Erro ao alterar senha','err');
+}
+
+// ADD MEMBER
+function openAddMember(){document.getElementById('add-modal').classList.remove('hidden');}
+function closeAddMember(){document.getElementById('add-modal').classList.add('hidden');}
+
+async function saveAddMember(){
+  const name=document.getElementById('am-name').value.trim();
+  const email=document.getElementById('am-email').value.trim().toLowerCase();
+  const plat=document.getElementById('am-plat').value;
+  const pass=document.getElementById('am-pass').value;
+  const acessoOpt=document.getElementById('am-ativo').value;
+  if(!name||!email||!pass){toast('Preencha todos os campos','err');return;}
+  if(pass.length<6){toast('Senha muito curta (mín. 6)','err');return;}
+  if(!/\S+@\S+\.\S+/.test(email)){toast('Email inválido','err');return;}
+  const ex=await GET('profiles',`?email=eq.${encodeURIComponent(email)}&select=id`);
+  if(ex&&ex.length){toast('Email já cadastrado','err');return;}
+  const id=crypto.randomUUID();
+  const ativo=acessoOpt==='true';
+  const trial_start=acessoOpt==='trial'?new Date().toISOString():null;
+  const plano=acessoOpt==='true'?'manual':acessoOpt==='trial'?'trial':'bloqueado';
+  const res=await POST('profiles',[{id,name,email,pass,plat,ativo,plano,trial_start,streak:1,last_date:'',goals:{d:200,s:1400,m:6000}}]);
+  if(res){
+    document.getElementById('am-name').value='';
+    document.getElementById('am-email').value='';
+    document.getElementById('am-pass').value='';
+    closeAddMember();
+    await renderAdmin();
+    toast(`✅ Membro ${name} adicionado!`);
+  }else toast('Erro ao adicionar membro','err');
+}
+
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+init();
+</script>
+</body>
+</html>
